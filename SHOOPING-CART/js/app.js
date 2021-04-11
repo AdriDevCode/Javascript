@@ -70,7 +70,7 @@ function eliminarElemento(e) {
 function vaciarCarrito() {
   // *metodo lento
   // cursoTabla.innerHTML = '';
-  // *metodo rapido
+  // !metodo rapido
   while (cursoTabla.firstChild) {
     cursoTabla.removeChild(cursoTabla.firstChild);
   }
