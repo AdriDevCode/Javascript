@@ -1,53 +1,57 @@
 // Prototype para seguro
-function Seguro(brand, year, radioType) {
-	this.brand = brand;
-	this.year = year;
-	this.radioType = radioType;
+class Seguro {
+	constructor(brand, year, radioType) {
+		this.brand = brand;
+		this.year = year;
+		this.radioType = radioType;
+	}
+	calcularSeguro() {
+		let cantidad;
+		const base = 2000;
+		switch (this.brand) {
+			case '1':
+				cantidad = base * 1.15;
+				break;
+			case '2':
+				cantidad = base * 1.05;
+				break;
+			case '3':
+				cantidad = base * 1.5;
+				break;
+		}
+		// *leer el year
+		const yearDifference = new Date().getFullYear() - this.year;
+		// *Cada year tendra una diferencia menos del 3%
+		cantidad -= 0.03 * yearDifference * cantidad;
+		//
+		if (this.radioType === 'basico') {
+			cantidad *= 1.3;
+		} else {
+			cantidad *= 1.5;
+		}
+		return cantidad;
+	}
 }
-Seguro.prototype.calcularSeguro = function () {
-	let cantidad;
-	const base = 2000;
-	switch (this.brand) {
-		case '1':
-			cantidad = base * 1.15;
-			break;
-		case '2':
-			cantidad = base * 1.05;
-			break;
-		case '3':
-			cantidad = base * 1.5;
-			break;
-	}
-	// *leer el year
-	const yearDifference = new Date().getFullYear() - this.year;
-	// *Cada year tendra una diferencia menos del 3%
-	cantidad -= 0.03 * yearDifference * cantidad;
-	//
-	if (this.radioType === 'basico') {
-		cantidad *= 1.3;
-	} else {
-		cantidad *= 1.5;
-	}
-	return cantidad;
-};
+
 // Imprimir el resultado de la cotizacion si todo fue seleccionado correctamente
 
-Interfaz.prototype.mostrarSeguro = function (seguro, total) {
-	const resultado = document.getElementById('resultado');
-	let brand;
-	switch (seguro.brand) {
-		case '1':
-			brand = 'Americano';
-			break;
-		case '2':
-			brand = 'Asiatico';
-			break;
-		case '3':
-			brand = 'Europeo';
-			break;
-	}
-	const div = document.createElement('div');
-	div.innerHTML = `
+class Interfaz {
+	mostrarSeguro(seguro, total) {
+		const resultado = document.getElementById('resultado');
+		let brand;
+		switch (seguro.brand) {
+			case '1':
+				brand = 'Americano';
+				break;
+			case '2':
+				brand = 'Asiatico';
+				break;
+			case '3':
+				brand = 'Europeo';
+				break;
+		}
+		const div = document.createElement('div');
+		div.innerHTML = `
 		<p class ="header">Tu Resumen </p>
 		<p>Marca: ${brand} </p>
 		<p>Periodo: ${seguro.year}</p>
@@ -55,33 +59,30 @@ Interfaz.prototype.mostrarSeguro = function (seguro, total) {
 		<p>Periodo: ${total}</p>
 	`;
 
-	// spinner
+		// spinner
 
-	const spinner = document.querySelector('#cargando img');
-	spinner.style.display = 'block';
-	setTimeout(function () {
-		spinner.style.display = 'none';
-		resultado.appendChild(div);
-	}, 1500);
-};
-
-// Para interfaz de resultadp
-function Interfaz() {}
-
-// Mensaje que se imprimira en el html si hay un error
-Interfaz.prototype.showError = function (mensaje, tipo) {
-	const div = document.createElement('div');
-	if (tipo === 'error') {
-		div.classList.add('mensaje', 'error');
-	} else {
-		div.classList.add('mensaje', 'correcto');
+		const spinner = document.querySelector('#cargando img');
+		spinner.style.display = 'block';
+		setTimeout(function () {
+			spinner.style.display = 'none';
+			resultado.appendChild(div);
+		}, 1500);
 	}
-	div.innerHTML = `${mensaje}`;
-	formulario.insertBefore(div, document.querySelector('.form-group'));
-	setTimeout(function () {
-		document.querySelector('.mensaje').remove();
-	}, 1500);
-};
+
+	showError(mensaje, tipo) {
+		const div = document.createElement('div');
+		if (tipo === 'error') {
+			div.classList.add('mensaje', 'error');
+		} else {
+			div.classList.add('mensaje', 'correcto');
+		}
+		div.innerHTML = `${mensaje}`;
+		formulario.insertBefore(div, document.querySelector('.form-group'));
+		setTimeout(function () {
+			document.querySelector('.mensaje').remove();
+		}, 1500);
+	}
+}
 
 // AddeventListerns
 const formulario = document.getElementById('cotizar-seguro');
