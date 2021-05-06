@@ -116,6 +116,7 @@ function ClickSbumit(e) {
 		interfaz.showError('faltan datos, prueba de nuevo', 'error');
 	} else {
 		const resultados = document.querySelector('#resultado div');
+		//* elimina los resultados anteriores
 		if (resultados != null) {
 			resultados.remove();
 		}
