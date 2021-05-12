@@ -1,110 +1,90 @@
-// ?Variables
+const list = document.querySelector('#lista-tweets');
+const submit = document.querySelector('#formulario');
+let teewts = [];
 
-const listTweets = document.getElementById('lista-tweets');
-// ?Event listener
-eventListener();
-// el event listener del tipo submit quiere decir que la funcion se realizara cuando se haga un submit
-function eventListener() {
-	document
-		.querySelector('#formulario')
-		.addEventListener('submit', agregartweet);
-	// cuando se haga click en borrar
-	listTweets.addEventListener('click', borrartweet);
-	// *Cuando el contenido de la pagina web haya cargado y poder utilizar el localstorage
-	document.addEventListener('DOMContentLoaded', localstoragecargado);
+eventlistener();
+function eventlistener() {
+	submit.addEventListener('submit', AddContent);
+	document.addEventListener('DOMContentLoaded', () => {
+		teewts = JSON.parse(localStorage.getItem('tweet')) || [];
+		buildHtml();
+	});
 }
 
-// ?functions
-// *Agergar el tweet al formulario
-function agregartweet(e) {
+function AddContent(e) {
 	e.preventDefault();
-	// leer el valor del textarea escrito por el usuario
-	const tweet = document.getElementById('tweet').value;
+	// obtener los datos del textarea
+	const tweetItem = document.querySelector('#tweet').value;
 
-	// *crear elemento li y agregar el contenido escrito por el usuario a la lista
-	const li = document.createElement('li');
-	// crear el tweet con los valores del text area
-	li.innerText = tweet;
-	// agregar las listas al padre div
-	listTweets.appendChild(li);
-	// *crear boton de borrar
-	const botonborrar = document.createElement('a');
-	botonborrar.classList = 'borrar-tweet';
-	botonborrar.innerText = 'X';
-	// add el boton como hijo de la lista
-	li.appendChild(botonborrar);
-	// * Agregar al local storage
-	agregartweetlocalstorage(tweet);
-}
-
-// *Borrar tweet
-function borrartweet(e) {
-	e.preventDefault();
-	if (e.target.className === 'borrar-tweet') {
-		e.target.parentElement.remove();
-		borrarTweetLocalStorage(e.target.parentElement.innerText);
-	}
-}
-
-// *agregar tweet al local storage
-function agregartweetlocalstorage(tweet) {
-	let tweets;
-	tweets = obtenertweetlocalstorage();
-	// agregando el nuevo tweet al array
-	tweets.push(tweet);
-	//  Agregar los elementos al local storage y convertir los elementos del json en strings
-	localStorage.setItem('tweets', JSON.stringify(tweets));
-}
-
-// comprueba que haya elementos en local storage
-function obtenertweetlocalstorage() {
-	let tweets;
-	// revisamos los valores del local sotage
-	if (localStorage.getItem('tweets') === null) {
-		tweets = [];
+	if (tweetItem === '') {
+		showError('Cannot Add an empty item, please type one😅');
+		// segun el profe , con el return evitamos que se ejecute mas codigo , como el break; es curisoso, tengo que buscarlo
+		return;
 	} else {
-		tweets = JSON.parse(localStorage.getItem('tweets'));
+		// si hay datos creara el objeto con los datos obtenidos
+		const objtweet = {
+			id: Date.now(),
+			content: tweetItem,
+		};
+		// * el spread operator creara un nuevo array sin afectar el array original, pero en este caso como la variable misma ya etsaba definida , cambiara el valor de la misma, ya que no es una constante
+		// Un array de objetos con los datos obtenidos
+		teewts = [...teewts, objtweet];
+		// llamar para crear el contenido en el html
+		buildHtml();
+		submit.reset();
 	}
-	return tweets;
 }
 
-// * Agregar los elementos del local storage a la pagina principal
-function localstoragecargado() {
-	let tweets;
-	tweets = obtenertweetlocalstorage();
-	tweets.forEach(function (tweet) {
-		// *crear elemento li y agregar el contenido escrito por el usuario a la lista
-		const li = document.createElement('li');
-		// crear el tweet con los valores del text area
-		li.innerText = tweet;
-		// agregar las listas al padre div listTweets
-		listTweets.appendChild(li);
-		// *crear boton de borrar
-		const botonborrar = document.createElement('a');
-		botonborrar.classList = 'borrar-tweet';
-		botonborrar.innerText = 'X';
-		// add el boton como hijo de la lista
-		li.appendChild(botonborrar);
-		// * Agregar al local storage
-	});
+function buildHtml() {
+	// limipia los datos repetidos dentro del html
+	cleanHtml();
+	// si hay datos , contruira un li para cada dato
+	if (teewts.length > 0) {
+		// tweet es el nombre que definio por el momento para acceder al array de datos y contruir un li para cada uno
+		teewts.forEach((tweet) => {
+			// crear delete button
+			const bton = document.createElement('a');
+			bton.classList.add('borrar-tweet');
+			bton.textContent = 'X';
+			list.appendChild(bton);
+			bton.onclick = () => {
+				deleteTweet(tweet.id);
+			};
+
+			// crear lista
+			const li = document.createElement('li');
+			li.textContent = tweet.content;
+			list.appendChild(li);
+		});
+	}
+	syncLocalStorage();
 }
 
-// Eliminar tweet de Local Storage
-
-function borrarTweetLocalStorage(tweet) {
-	let tweets, tweetBorrar;
-	// Elimina la X del tweet
-	tweetBorrar = tweet.substring(0, tweet.length - 1);
-
-	tweets = obtenertweetlocalstorage();
-
-	tweets.forEach(function (tweet, index) {
-		if (tweetBorrar === tweet) {
-			tweets.splice(index, 1);
-		}
-	});
-
-	localStorage.setItem('tweets', JSON.stringify(tweets));
+function syncLocalStorage() {
+	localStorage.setItem('tweet', JSON.stringify(teewts));
 }
 
-// ?JSON.parse() toma una cadena JSON y la transforma en un objeto de JavaScript ; JSON.stringify() toma un objeto de JavaScript y lo transforma en una cadena JSON.
+function showError(error) {
+	const container = document.querySelector('.container');
+	const p = document.createElement('p');
+	p.classList.add('error');
+	p.textContent = error;
+	container.appendChild(p);
+	setTimeout(() => {
+		p.remove();
+	}, 2700);
+}
+
+function cleanHtml() {
+	while (list.firstChild) {
+		list.removeChild(list.firstChild);
+	}
+}
+
+function deleteTweet(id) {
+	teewts = teewts.filter((tweet) => tweet.id !== id);
+	// *debido a que filter crea un nuevo array , hay que llamar de nuevo la funcion , para que se syncronice con los datos actuales y el loca storage se vuelva a generar pero con los datos actuales,
+
+	// *A difernecia de la version anterior del codigo, que yo mismo elimina los datos del local, aqui se eliminan independientemente porque toma los datos del nuevo array creados
+	buildHtml();
+}
