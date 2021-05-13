@@ -1,5 +1,5 @@
 // ?Variables
-
+const form = document.querySelector('#formulario');
 const listTweets = document.getElementById('lista-tweets');
 // ?Event listener
 eventListener();
@@ -35,6 +35,7 @@ function agregartweet(e) {
 	li.appendChild(botonborrar);
 	// * Agregar al local storage
 	agregartweetlocalstorage(tweet);
+	form.reset();
 }
 
 // *Borrar tweet
